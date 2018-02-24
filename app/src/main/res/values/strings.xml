@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MovieFlix</string>
+    <string name="movie_title">Title</string>
+    <string name="action_popularity">Popularity</string>
+    <string name="action_top_rated">Top Rated</string>
+    <string name="action_favourite">Favourite</string>
+</resources>
