@@ -4,5 +4,5 @@
     <string name="action_popularity">Popularity</string>
     <string name="action_top_rated">Top Rated</string>
     <string name="action_favourite">Favourite</string>
-    <string name="mobile_network_not_available">Mobile network Not Available</string>
+    <string name="mobile_network_not_available">Mobile Network Not Available</string>
 </resources>

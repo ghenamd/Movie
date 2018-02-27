@@ -9,6 +9,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        // Please make sure you have a valid API KEY for themoviedb.org to use this App
+        // A valid key will need to be entered
+        buildConfigField("String", "API_KEY", API_KEY)
     }
     buildTypes {
         release {
@@ -32,4 +35,5 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     compile 'com.android.support:cardview-v7:26.1.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 }

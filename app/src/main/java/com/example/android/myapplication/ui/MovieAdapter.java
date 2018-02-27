@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import com.example.android.myapplication.R;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.utils.Constants;
-import com.squareup.picasso.Picasso;
+import com.example.android.myapplication.utils.LoadCachedImages;
 
 import java.util.List;
 
@@ -36,13 +36,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
     public void onBindViewHolder(ThumbnailsViewHolder holder, int position) {
         MovieResult currentMovie = mResultList.get(position);
         String imagePath = Constants.IMAGE_BASE_URL + currentMovie.getPosterPath();
-        Picasso.with(holder.itemView.getContext())
-                .load(imagePath)
-                .error(R.drawable.no_image_icon)
-                .resize(200, 250)
-                .onlyScaleDown()
-                .centerCrop()
-                .into(holder.mImage);
+        //Using this method to load cached images from memory to keep a smooth scroll
+        LoadCachedImages.loadImageFromMemory(holder.itemView.getContext(), imagePath, holder.mImage);
 
     }
 

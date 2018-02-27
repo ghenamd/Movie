@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                 List<MovieResult> movieResults = response.body().getResults();
                 mAdapter.addMovieResult(movieResults);
                 mProgressBar.setVisibility(View.INVISIBLE);
+                mStatus.setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -120,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     public void onClickedMovie(MovieResult movie) {
         Intent intent =  new Intent(MainActivity.this,MovieDetailsActivity.class);
+        intent.putExtra(Constants.PARCEL,movie);
         startActivity(intent);
 
     }

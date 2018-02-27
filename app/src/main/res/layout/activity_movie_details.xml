@@ -22,7 +22,8 @@
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
-
+            <include layout="@layout/content_collapsing_toolbar"
+            />
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
@@ -33,12 +34,12 @@
         android:layout_width="wrap_content"
         android:layout_height="56dp"
         android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="@android:color/transparent"
         android:scaleType="center"
         android:src="@drawable/favourite"
-        app:fabSize="normal"
-        android:backgroundTint="@android:color/transparent"
         app:borderWidth="0dp"
         app:elevation="0dp"
+        app:fabSize="normal"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end" />
 
