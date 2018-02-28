@@ -19,6 +19,8 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:id="@+id/title"
             android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
             tools:text="Title"/>
         <TextView
             android:layout_width="wrap_content"
