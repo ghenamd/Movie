@@ -70,9 +70,39 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_popularity) {
+            Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
+            movieCall.enqueue(new Callback<Movie>() {
+                @Override
+                public void onResponse(Call<Movie> call, Response<Movie> response) {
+                    List<MovieResult> results = response.body().getResults();
+                    mAdapter.addMovieResult(results);
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mStatus.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void onFailure(Call<Movie> call, Throwable t) {
+
+                }
+            });
             return true;
         }
         if (id == R.id.action_top_rated) {
+           Call<Movie> movieCall= mManager.getMovieClient().getTopRatedMovies(Constants.API_KEY);
+           movieCall.enqueue(new Callback<Movie>() {
+               @Override
+               public void onResponse(Call<Movie> call, Response<Movie> response) {
+                   List<MovieResult> movieResults = response.body().getResults();
+                   mAdapter.addMovieResult(movieResults);
+                   mProgressBar.setVisibility(View.INVISIBLE);
+                   mStatus.setVisibility(View.INVISIBLE);
+               }
+
+               @Override
+               public void onFailure(Call<Movie> call, Throwable t) {
+
+               }
+           });
             return true;
         }
         if (id == R.id.action_favourite) {

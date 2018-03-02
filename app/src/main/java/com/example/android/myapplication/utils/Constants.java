@@ -11,4 +11,5 @@ public class Constants {
     public static final String API_KEY = BuildConfig.API_KEY;
     public static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w342/";
     public static final String PARCEL = "Parcel";
+    public static final String YOUTUBE_URL = "https://www.youtube.com/watch?v=";
 }

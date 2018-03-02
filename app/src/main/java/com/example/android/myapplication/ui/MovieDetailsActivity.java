@@ -3,6 +3,8 @@ package com.example.android.myapplication.ui;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.ToggleButton;
 import com.example.android.myapplication.R;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.utils.Constants;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
@@ -26,13 +29,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
     ImageView imageThumbnail;
     @BindView(R.id.releaseDate)
     TextView date;
-    @BindView(R.id.overview)
-    TextView overview;
     @BindView(R.id.image_button)
     ToggleButton mButton;
     private RatingBar mRatingBar;
     private static final String TAG = "MovieDetailsActivity";
     private boolean isClicked = false;
+    @BindView(R.id.recycler_trailers)
+    RecyclerView mRecyclerView;
+    ExpandableTextView mExpandableTextView;
+    private TrailerAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +46,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Toolbar toolbar = findViewById(R.id.toolbar);
         mRatingBar = findViewById(R.id.ratingBar);
+        mExpandableTextView = findViewById(R.id.expand_text_view);
         setSupportActionBar(toolbar);
         setFavouriteButton();
         populateUi();
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        mRecyclerView.setLayoutManager(manager);
     }
 
     @Override
@@ -70,7 +78,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Picasso.with(this).load(Constants.IMAGE_BASE_URL + movieResult.getPosterPath())
                 .fit().into(imageThumbnail);
         date.setText(movieResult.getReleaseDate());
-        overview.setText(movieResult.getOverview());
+        mExpandableTextView.setText(movieResult.getOverview());
         setRatingBar(movieResult.getVoteAverage());
     }
 
