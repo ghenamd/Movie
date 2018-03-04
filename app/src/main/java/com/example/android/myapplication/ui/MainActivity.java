@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
             return true;
         }
         if (id == R.id.action_top_rated) {
+            mManager = new RestManager();
            Call<Movie> movieCall= mManager.getMovieClient().getTopRatedMovies(Constants.API_KEY);
            movieCall.enqueue(new Callback<Movie>() {
                @Override

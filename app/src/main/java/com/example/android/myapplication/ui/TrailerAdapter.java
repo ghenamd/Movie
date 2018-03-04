@@ -1,6 +1,5 @@
 package com.example.android.myapplication.ui;
 
-import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +9,9 @@ import android.widget.ImageView;
 import com.example.android.myapplication.R;
 import com.example.android.myapplication.model.MovieVideoResult;
 import com.example.android.myapplication.utils.Constants;
-import com.example.android.myapplication.utils.GenerateMovieThumbnail;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by Ghena on 28/02/2018.
@@ -42,14 +38,12 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     public void onBindViewHolder(TrailerAdapter.ViewHolder holder, int position) {
         MovieVideoResult movieVideoResult = mVideoResults.get(position);
         String key = movieVideoResult.getKey();
-        try {
-            Bitmap thumbnail = GenerateMovieThumbnail.retriveVideoFrameFromVideo(Constants.YOUTUBE_URL + key);
-            holder.mImageView.setImageBitmap(thumbnail);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-
-
+        String thumbnailUrl = Constants.YOUTUBE_VIDEO_THUMBNAIL + key+ Constants.YOUTUBE_THUMBNAIL_MEDIUM_QUALITY;
+        Picasso.with(holder.itemView.getContext())
+                .load(thumbnailUrl)
+                .placeholder(R.color.colorWhite)
+                .resize(300,250)
+                .into(holder.mImageView);
 
     }
 
@@ -57,17 +51,18 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     public int getItemCount() {
         return mVideoResults.size();
     }
-    public void addTrailers(List<MovieVideoResult> results){
+
+    public void addTrailers(List<MovieVideoResult> results) {
         mVideoResults = results;
+        notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.image_thumbnail)
         ImageView mImageView;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+            mImageView = itemView.findViewById(R.id.trailer_thumbnail);
         }
     }
 }

@@ -2,4 +2,7 @@
     <dimen name="app_bar_height">300dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="eight_dp">8dp</dimen>
+    <dimen name="paddingTop">8dp</dimen>
+    <dimen name="recycler_padding">16dp</dimen>
 </resources>

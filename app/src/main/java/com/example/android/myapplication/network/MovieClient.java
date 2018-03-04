@@ -6,6 +6,7 @@ import com.example.android.myapplication.model.MovieVideo;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -23,10 +24,12 @@ public interface MovieClient {
     @GET("upcoming?")
     Call<Movie> getUpcomingMovies(@Query("api_key")String s);
 
-    @GET("{movie_id}videos?")
-    Call<MovieVideo> getMovieTrailer(@Query("api_key")String s);
+    @GET("{movie_id}/videos?")
+    Call<MovieVideo> getMovieTrailer(@Path("movie_id") int in, @Query("api_key")String s);
 
     @GET("{movie_id}/reviews?")
     Call<MovieReview> getMovieReview(@Query("api_key")String s);
+    @GET()
+    Call<MovieVideo> getVideo(String s);
 
 }
