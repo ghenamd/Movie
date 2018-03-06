@@ -1,5 +1,8 @@
 package com.example.android.myapplication.ui;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -8,13 +11,16 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.example.android.myapplication.R;
+import com.example.android.myapplication.data.InsertMovieDetails;
+import com.example.android.myapplication.data.MovieContract;
+import com.example.android.myapplication.data.MovieDbHelper;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.model.MovieVideo;
 import com.example.android.myapplication.model.MovieVideoResult;
@@ -43,13 +49,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
     ToggleButton mButton;
     private RatingBar mRatingBar;
     private static final String TAG = "MovieDetailsActivity";
-    private boolean isClicked = false;
     @BindView(R.id.recycler_trailers)
     RecyclerView mRecyclerView;
     ExpandableTextView mExpandableTextView;
     private TrailerAdapter mAdapter;
     private RestManager mManager;
     private MovieResult movieResult;
+    private MovieDbHelper mMovieDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +66,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mRatingBar = findViewById(R.id.ratingBar);
         mExpandableTextView = findViewById(R.id.expand_text_view);
         movieResult = getIntent().getParcelableExtra(Constants.PARCEL);
-        Log.v(TAG, String.valueOf(movieResult.getId()));
+        mMovieDbHelper = new MovieDbHelper(this);
+        isFavouriteMovie(movieResult.getId());
         setSupportActionBar(toolbar);
         setFavouriteButton();
         populateUi();
         mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>());
         setMovieVideoResultClient();
-
         RecyclerView.LayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(manager);
         mRecyclerView.setAdapter(mAdapter);
@@ -89,6 +95,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    //Retrofit method to get fetch the Trailers for the movies
     private void setMovieVideoResultClient() {
         mManager = new RestManager();
         Call<MovieVideo> movieVideoCall = mManager.getMovieClient()
@@ -123,16 +130,62 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setRatingBar(movieResult.getVoteAverage());
     }
 
+    // Set the ClickListener on the ToggleButton
+    // responsible for adding or deleting a movie from the Favourites list
     private void setFavouriteButton() {
-        mButton.setOnClickListener(new View.OnClickListener() {
+        mButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                if (mButton.isChecked()) {
-                    mButton.setBackgroundResource(R.drawable.star_yellow);
-                } else {
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                int idOfTheMovie = movieResult.getId();
+
+                if (isFavouriteMovie(idOfTheMovie)) {
                     mButton.setBackgroundResource(R.drawable.star_white);
+                    deleteFromFavourite(idOfTheMovie);
+                } else if (!isFavouriteMovie(movieResult.getId())) {
+                    mButton.setBackgroundResource(R.drawable.star_yellow);
+                    addToFavourite();
                 }
             }
         });
     }
+
+    //Add Movies to the local database
+    private void addToFavourite() {
+        ContentValues values = InsertMovieDetails.insertMovieValues(movieResult);
+        SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
+        db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
+
+    }
+
+    //Delete Movie  from the local database
+    private void deleteFromFavourite(int id) {
+        SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
+        db.delete(MovieContract.MovieEntry.TABLE_NAME,
+                MovieContract.MovieEntry.COLUMN_ID + "=" + id,
+                null);
+    }
+
+    //Method to check if the Movie to be added to Favourites is in Favourite database
+    public boolean isFavouriteMovie(int id) {
+
+        SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
+        String[] projection = {MovieContract.MovieEntry.COLUMN_ID};
+        String[] selectionArgs = {String.valueOf(id)};
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                projection,
+                MovieContract.MovieEntry.COLUMN_ID + "=?",
+                selectionArgs,
+                null,
+                null,
+                null);
+        if (cursor.moveToNext() && cursor.getCount() > 0) {
+            cursor.close();
+            mButton.setBackgroundResource(R.drawable.star_yellow);
+            return true;
+        } else {
+            cursor.close();
+            return false;
+        }
+    }
+
 }

@@ -20,8 +20,9 @@ public class MovieContract {
                 .build();
         public static final String TABLE_NAME = "movie";
         public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_ID = "id";
         public static final String COLUMN_PICTURE = "picture";
-        public static final String COLUMN_RATING = "rating";
+        public static final String COLUMN_VOTE_AVERAGE = "vote_average";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_RELEASE_DATE = "release_date";
 

@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MovieDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "movie.db";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 4;
 
     public MovieDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -20,11 +20,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_MOVIE_TABLE =
-                "CREATE TABLE" + MovieContract.MovieEntry.TABLE_NAME + " (" +
+                "CREATE TABLE " + MovieContract.MovieEntry.TABLE_NAME + " (" +
                         MovieContract.MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         MovieContract.MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+                        MovieContract.MovieEntry.COLUMN_ID + " REAL NOT NULL, " +
                         MovieContract.MovieEntry.COLUMN_PICTURE + " TEXT NOT NULL, " +
-                        MovieContract.MovieEntry.COLUMN_RATING + " REAL NOT NULL, " +
+                        MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                         MovieContract.MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
                         MovieContract.MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL);";
         db.execSQL(SQL_CREATE_MOVIE_TABLE);

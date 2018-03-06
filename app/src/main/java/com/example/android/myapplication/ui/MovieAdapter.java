@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.android.myapplication.R;
+import com.example.android.myapplication.data.MovieDbHelper;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.utils.Constants;
 import com.example.android.myapplication.utils.LoadCachedImages;
@@ -20,6 +21,7 @@ import java.util.List;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsViewHolder> {
     private List<MovieResult> mResultList;
     private OnItemClicked mClicked;
+    private MovieDbHelper mDbHelper;
 
     public MovieAdapter(List<MovieResult> resultList, OnItemClicked movieClicked) {
         mResultList = resultList;
@@ -49,6 +51,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
     public void addMovieResult(List<MovieResult> list) {
         mResultList = list;
         notifyDataSetChanged();
+    }
+    public void clear ()
+    {
+        mResultList.clear();
+        this.notifyDataSetChanged();
     }
 
     public interface OnItemClicked {

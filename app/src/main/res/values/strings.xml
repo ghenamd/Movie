@@ -1,8 +1,12 @@
 <resources>
     <string name="app_name">MovieFlix</string>
     <string name="movie_title">Title</string>
-    <string name="action_popularity">Popularity</string>
+    <string name="action_popularity">Popular</string>
     <string name="action_top_rated">Top Rated</string>
     <string name="action_favourite">Favourite</string>
     <string name="mobile_network_not_available">Mobile Network Not Available</string>
+    <string name="no_favourite_movie">No Favourites Movies</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="favourite">Favourite</string>
 </resources>

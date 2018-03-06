@@ -2,6 +2,9 @@ package com.example.android.myapplication.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -9,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +20,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.myapplication.R;
+import com.example.android.myapplication.data.MovieContract;
+import com.example.android.myapplication.data.MovieDbHelper;
 import com.example.android.myapplication.model.Movie;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.network.RestManager;
@@ -43,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     ProgressBar mProgressBar;
     @BindView(R.id.network_error)
     TextView mStatus;
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,14 +75,42 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
+        //Fetch and Sort Movies by Popularity
         if (id == R.id.action_popularity) {
-            Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
+            setTitle(getString(R.string.popular));
+            if (isConnected()) {
+                mManager = new RestManager();
+                Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
+                movieCall.enqueue(new Callback<Movie>() {
+                    @Override
+                    public void onResponse(Call<Movie> call, Response<Movie> response) {
+                        List<MovieResult> results = response.body().getResults();
+                        mAdapter.addMovieResult(results);
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        mStatus.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Movie> call, Throwable t) {
+                    }
+                });
+                return true;
+            } else {
+                mStatus.setVisibility(View.VISIBLE);
+                mStatus.setText(R.string.mobile_network_not_available);
+
+            }
+        }
+        else if (id == R.id.action_top_rated) {
+            setTitle(getString(R.string.top_rated));
+            //Fetch and sort Movies by Rating
+            mManager = new RestManager();
+            Call<Movie> movieCall = mManager.getMovieClient().getTopRatedMovies(Constants.API_KEY);
             movieCall.enqueue(new Callback<Movie>() {
                 @Override
                 public void onResponse(Call<Movie> call, Response<Movie> response) {
-                    List<MovieResult> results = response.body().getResults();
-                    mAdapter.addMovieResult(results);
+                    List<MovieResult> movieResults = response.body().getResults();
+                    mAdapter.addMovieResult(movieResults);
                     mProgressBar.setVisibility(View.INVISIBLE);
                     mStatus.setVisibility(View.INVISIBLE);
                 }
@@ -87,26 +122,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
             });
             return true;
         }
-        if (id == R.id.action_top_rated) {
-            mManager = new RestManager();
-           Call<Movie> movieCall= mManager.getMovieClient().getTopRatedMovies(Constants.API_KEY);
-           movieCall.enqueue(new Callback<Movie>() {
-               @Override
-               public void onResponse(Call<Movie> call, Response<Movie> response) {
-                   List<MovieResult> movieResults = response.body().getResults();
-                   mAdapter.addMovieResult(movieResults);
-                   mProgressBar.setVisibility(View.INVISIBLE);
-                   mStatus.setVisibility(View.INVISIBLE);
-               }
-
-               @Override
-               public void onFailure(Call<Movie> call, Throwable t) {
-
-               }
-           });
-            return true;
-        }
-        if (id == R.id.action_favourite) {
+        else if (id == R.id.action_favourite) {
+            setTitle(getString(R.string.favourite));
+            mStatus.setVisibility(View.INVISIBLE);
+            // A list of Favourite Movies
+            setMovie();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -151,9 +171,61 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
 
     @Override
     public void onClickedMovie(MovieResult movie) {
-        Intent intent =  new Intent(MainActivity.this,MovieDetailsActivity.class);
-        intent.putExtra(Constants.PARCEL,movie);
+        Intent intent = new Intent(MainActivity.this, MovieDetailsActivity.class);
+        intent.putExtra(Constants.PARCEL, movie);
         startActivity(intent);
+    }
+    // Method that creates a List of movies from the local database and passes it to the MovieAdapter
+    public void setMovie() {
+        MovieDbHelper mMovieDbHelper = new MovieDbHelper(this);
+        SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
+        String[] projection = {
+                MovieContract.MovieEntry._ID,
+                MovieContract.MovieEntry.COLUMN_TITLE,
+                MovieContract.MovieEntry.COLUMN_ID,
+                MovieContract.MovieEntry.COLUMN_PICTURE,
+                MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+                MovieContract.MovieEntry.COLUMN_OVERVIEW,
+                MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+        };
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null);
+        Log.v(TAG, DatabaseUtils.dumpCursorToString(cursor));
+        if (cursor.getCount() == 0) {
+            mStatus.setText(R.string.no_favourite_movie);
+            mStatus.setVisibility(View.VISIBLE);
+        }
+        List<MovieResult> movieResults = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            MovieResult result = new MovieResult();
+            result.setOriginalTitle(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+            result.setId(cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ID)));
+            result.setPosterPath(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_PICTURE)));
+            result.setVoteAverage(cursor.getDouble(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE)));
+            result.setOverview(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
+            result.setReleaseDate(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
+            movieResults.add(result);
+        }
+        mAdapter.clear();
+        mAdapter.addMovieResult(movieResults);
+        cursor.close();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //If the title of the ActionBar is Favourite
+        //then we setMovie method so we get and updated list of
+        //the favourite movies
+        CharSequence sequence = getSupportActionBar().getTitle();
+        Log.v(TAG, String.valueOf(sequence));
+        if (String.valueOf(sequence).equals(Constants.FAVOURITE)){
+            setMovie();
+        }
     }
 }

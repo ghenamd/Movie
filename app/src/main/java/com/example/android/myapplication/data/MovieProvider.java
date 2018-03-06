@@ -1,6 +1,7 @@
 package com.example.android.myapplication.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -50,7 +51,24 @@ public class MovieProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        return null;
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        Uri returnUri;
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case CODE_MOVIE_WITH_ID:
+                long id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, contentValues);
+                if (id != -1) {
+                    returnUri = ContentUris.withAppendedId(MovieContract.MovieEntry.CONTENT_URI, id);
+                } else {
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri" + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri,null);
+
+        return returnUri;
     }
 
     @Override
