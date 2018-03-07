@@ -9,4 +9,7 @@
     <string name="popular">Popular</string>
     <string name="top_rated">Top Rated</string>
     <string name="favourite">Favourite</string>
+    <string name="movie_review">Movie Review</string>
+    <string name="review_review_review">Review review review</string>
+    <string name="author">Author</string>
 </resources>

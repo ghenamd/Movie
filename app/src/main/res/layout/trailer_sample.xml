@@ -16,5 +16,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:id="@+id/youtube_play"
         android:src="@drawable/ic_action_youtube"/>
 </RelativeLayout>

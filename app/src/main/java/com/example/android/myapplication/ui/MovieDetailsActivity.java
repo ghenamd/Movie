@@ -1,8 +1,11 @@
 package com.example.android.myapplication.ui;
 
 import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +18,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.android.myapplication.R;
@@ -22,9 +26,13 @@ import com.example.android.myapplication.data.InsertMovieDetails;
 import com.example.android.myapplication.data.MovieContract;
 import com.example.android.myapplication.data.MovieDbHelper;
 import com.example.android.myapplication.model.MovieResult;
+import com.example.android.myapplication.model.MovieReview;
+import com.example.android.myapplication.model.MovieReviewResult;
 import com.example.android.myapplication.model.MovieVideo;
 import com.example.android.myapplication.model.MovieVideoResult;
 import com.example.android.myapplication.network.RestManager;
+import com.example.android.myapplication.ui.adapters.ReviewAdapter;
+import com.example.android.myapplication.ui.adapters.TrailerAdapter;
 import com.example.android.myapplication.utils.Constants;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.picasso.Picasso;
@@ -38,7 +46,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity implements TrailerAdapter.OnTrailerClick {
     @BindView(R.id.title)
     TextView title;
     @BindView(R.id.image_thumbnail)
@@ -51,11 +59,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private static final String TAG = "MovieDetailsActivity";
     @BindView(R.id.recycler_trailers)
     RecyclerView mRecyclerView;
+    @BindView(R.id.recycler_review)
+    RecyclerView mRecyclerViewReviews;
     ExpandableTextView mExpandableTextView;
     private TrailerAdapter mAdapter;
     private RestManager mManager;
     private MovieResult movieResult;
     private MovieDbHelper mMovieDbHelper;
+    private ReviewAdapter mReviewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +82,19 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         setFavouriteButton();
         populateUi();
-        mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>());
+
+        mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>(),this);
         setMovieVideoResultClient();
         RecyclerView.LayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(manager);
         mRecyclerView.setAdapter(mAdapter);
+
+        mReviewAdapter = new ReviewAdapter(new ArrayList<MovieReviewResult>());
+        setMovieReview();
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerViewReviews.setLayoutManager(layoutManager);
+        mRecyclerViewReviews.setAdapter(mReviewAdapter);
+
     }
 
     @Override
@@ -118,6 +137,27 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void setMovieReview() {
+        mManager = new RestManager();
+        Call<MovieReview> movieReviewCall = mManager.getMovieClient().
+                getMovieReview(movieResult.getId(), Constants.API_KEY);
+        movieReviewCall.enqueue(new Callback<MovieReview>() {
+            @Override
+            public void onResponse(Call<MovieReview> call, Response<MovieReview> response) {
+                List<MovieReviewResult> movieReviewResults = response.body().getResults();
+                mReviewAdapter.addMovieReviews(movieReviewResults);
+                Log.v(TAG, movieReviewResults.toString());
+//
+            }
+
+            @Override
+            public void onFailure(Call<MovieReview> call, Throwable t) {
+
+            }
+        });
+
     }
 
     private void populateUi() {
@@ -188,4 +228,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onClick(MovieVideoResult videoResult) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(Constants.YOUTUBE_URL + videoResult.getKey()));
+        PackageManager packageManager = getPackageManager();
+        if (intent.resolveActivity(packageManager) !=null){
+            startActivity(intent);
+        }
+        else {
+            Toast.makeText(this,"No apps available to play video",Toast.LENGTH_SHORT);
+        }
+
+    }
 }

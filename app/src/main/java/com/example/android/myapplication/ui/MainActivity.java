@@ -25,6 +25,7 @@ import com.example.android.myapplication.data.MovieDbHelper;
 import com.example.android.myapplication.model.Movie;
 import com.example.android.myapplication.model.MovieResult;
 import com.example.android.myapplication.network.RestManager;
+import com.example.android.myapplication.ui.adapters.MovieAdapter;
 import com.example.android.myapplication.utils.Constants;
 
 import java.util.ArrayList;
@@ -164,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         if (isConnected()) {
             setManager();
         } else {
+            mStatus.setVisibility(View.VISIBLE);
             mStatus.setText(R.string.mobile_network_not_available);
             mProgressBar.setVisibility(View.INVISIBLE);
         }

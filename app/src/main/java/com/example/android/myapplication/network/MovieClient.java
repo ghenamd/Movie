@@ -28,8 +28,5 @@ public interface MovieClient {
     Call<MovieVideo> getMovieTrailer(@Path("movie_id") int in, @Query("api_key")String s);
 
     @GET("{movie_id}/reviews?")
-    Call<MovieReview> getMovieReview(@Query("api_key")String s);
-    @GET()
-    Call<MovieVideo> getVideo(String s);
-
+    Call<MovieReview> getMovieReview(@Path("movie_id")int in,@Query("api_key")String s);
 }

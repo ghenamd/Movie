@@ -3,6 +3,8 @@ package com.example.android.myapplication.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * Created by Ghena on 24/02/2018.
  */
@@ -10,90 +12,57 @@ import com.google.gson.annotations.SerializedName;
 public class MovieReview {
     @SerializedName("id")
     @Expose
-    private String id;
-    @SerializedName("author")
+    private Integer id;
+    @SerializedName("page")
     @Expose
-    private String author;
-    @SerializedName("content")
+    private Integer page;
+    @SerializedName("results")
     @Expose
-    private String content;
-    @SerializedName("iso_639_1")
+    private List<MovieReviewResult> results = null;
+    @SerializedName("total_pages")
     @Expose
-    private String iso6391;
-    @SerializedName("media_id")
+    private Integer totalPages;
+    @SerializedName("total_results")
     @Expose
-    private Integer mediaId;
-    @SerializedName("media_title")
-    @Expose
-    private String mediaTitle;
-    @SerializedName("media_type")
-    @Expose
-    private String mediaType;
-    @SerializedName("url")
-    @Expose
-    private String url;
+    private Integer totalResults;
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getAuthor() {
-        return author;
+    public Integer getPage() {
+        return page;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setPage(Integer page) {
+        this.page = page;
     }
 
-    public String getContent() {
-        return content;
+    public List<MovieReviewResult> getResults() {
+        return results;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setResults(List<MovieReviewResult> results) {
+        this.results = results;
     }
 
-    public String getIso6391() {
-        return iso6391;
+    public Integer getTotalPages() {
+        return totalPages;
     }
 
-    public void setIso6391(String iso6391) {
-        this.iso6391 = iso6391;
+    public void setTotalPages(Integer totalPages) {
+        this.totalPages = totalPages;
     }
 
-    public Integer getMediaId() {
-        return mediaId;
+    public Integer getTotalResults() {
+        return totalResults;
     }
 
-    public void setMediaId(Integer mediaId) {
-        this.mediaId = mediaId;
-    }
-
-    public String getMediaTitle() {
-        return mediaTitle;
-    }
-
-    public void setMediaTitle(String mediaTitle) {
-        this.mediaTitle = mediaTitle;
-    }
-
-    public String getMediaType() {
-        return mediaType;
-    }
-
-    public void setMediaType(String mediaType) {
-        this.mediaType = mediaType;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setTotalResults(Integer totalResults) {
+        this.totalResults = totalResults;
     }
 }
