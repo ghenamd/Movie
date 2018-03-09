@@ -33,13 +33,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         MovieReviewResult result = mReviewResults.get(position);
         String review = result.getContent();
         String author = result.getAuthor();
-        if(review.contains("_")){
-            review = review.replace("_","");
-            holder.review.setText(review);
-        }
-
+        holder.review.setText(review);
         holder.author.setText(": " + author);
-
     }
 
     @Override

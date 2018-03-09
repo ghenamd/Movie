@@ -20,6 +20,7 @@ import java.util.List;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsViewHolder> {
     private List<MovieResult> mResultList;
     private OnItemClicked mClicked;
+    private boolean isLoadingAdded = false;
 
     public MovieAdapter(List<MovieResult> resultList, OnItemClicked movieClicked) {
         mResultList = resultList;
@@ -47,11 +48,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
     }
 
     public void addMovieResult(List<MovieResult> list) {
+        mResultList.clear();
         mResultList = list;
         notifyDataSetChanged();
     }
-    public void clear ()
-    {
+
+    public void clear() {
         mResultList.clear();
         this.notifyDataSetChanged();
     }
@@ -75,5 +77,34 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
             MovieResult movieResult = mResultList.get(position);
             mClicked.onClickedMovie(movieResult);
         }
+    }
+
+    /*
+    /*----------------------------------------Helper Methods for endless scrolling
+     */
+    public void add(MovieResult m) {
+        mResultList.add(m);
+        notifyItemInserted(mResultList.size() - 1);
+    }
+
+    public void addLoadingFooter() {
+        isLoadingAdded = true;
+        add(new MovieResult());
+    }
+
+    public void removeLoadingFooter() {
+        isLoadingAdded = false;
+
+        int position = mResultList.size() - 1;
+        MovieResult result = getItem(position);
+
+        if (result != null) {
+            mResultList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    public MovieResult getItem(int position) {
+        return mResultList.get(position);
     }
 }

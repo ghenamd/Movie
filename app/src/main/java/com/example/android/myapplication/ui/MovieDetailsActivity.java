@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -67,6 +68,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     private MovieResult movieResult;
     private MovieDbHelper mMovieDbHelper;
     private ReviewAdapter mReviewAdapter;
+    private static final String RECYCLERVIEW_STATE = "state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,8 +150,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
             public void onResponse(Call<MovieReview> call, Response<MovieReview> response) {
                 List<MovieReviewResult> movieReviewResults = response.body().getResults();
                 mReviewAdapter.addMovieReviews(movieReviewResults);
-                Log.v(TAG, movieReviewResults.toString());
-//
             }
 
             @Override
@@ -237,8 +237,25 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
             startActivity(intent);
         }
         else {
-            Toast.makeText(this,"No apps available to play video",Toast.LENGTH_SHORT);
+            Toast.makeText(this, R.string.toast_message,Toast.LENGTH_SHORT).show();
         }
 
+    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(RECYCLERVIEW_STATE,mRecyclerView.getLayoutManager().onSaveInstanceState());
+        mRecyclerView.setAdapter(mAdapter);
+    }
+
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState == null){
+            Parcelable parcelable = savedInstanceState.getParcelable(RECYCLERVIEW_STATE);
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(parcelable);
+        }
     }
 }
