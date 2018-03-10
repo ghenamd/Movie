@@ -48,7 +48,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
     }
 
     public void addMovieResult(List<MovieResult> list) {
-        mResultList.clear();
         mResultList = list;
         notifyDataSetChanged();
     }

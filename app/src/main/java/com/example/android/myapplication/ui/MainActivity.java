@@ -2,6 +2,7 @@ package com.example.android.myapplication.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @BindView(R.id.network_error)
     TextView mStatus;
     Parcelable parcelable;
+    GridLayoutManager manager;
     private List<MovieResult> movieResults;
     private static final String TAG = "MainActivity";
     // we will be loading 15 items per page or per load
@@ -75,13 +77,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRecyclerView.getLayoutManager().onRestoreInstanceState(parcelable);
+
         ButterKnife.bind(this);
-
-        mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
         mManager = new RestManager();
-
-        final GridLayoutManager manager = new GridLayoutManager(this, 2);
+        mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
+         manager= new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(manager);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                 mAdapter.addMovieResult(movieResults);
                 mProgressBar.setVisibility(View.INVISIBLE);
                 mStatus.setVisibility(View.INVISIBLE);
-                lastId = movieResults.size();
+
             }
 
             @Override
@@ -222,6 +222,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     protected void onResume() {
         super.onResume();
+        if (parcelable!=null){
+            manager.onRestoreInstanceState(parcelable);
+        }
+
         //If the title of the ActionBar is Favourite
         //then we setMovie method so we get and updated list of
         //the favourite movies
@@ -232,15 +236,26 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         }
     }
 
-    public class MovieLoader extends AsyncTaskLoader<Cursor>{
-
-    public MovieLoader(Context context) {
-        super(context);
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(this,3);
+            mRecyclerView.setLayoutManager(gridLayoutManager);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            mRecyclerView.setLayoutManager(manager);
+        }
     }
 
-    @Override
-    public Cursor loadInBackground() {
-        MovieDbHelper mMovieDbHelper = new MovieDbHelper(getContext());
+    public class MovieLoader extends AsyncTaskLoader<Cursor> {
+
+        public MovieLoader(Context context) {
+            super(context);
+        }
+
+        @Override
+        public Cursor loadInBackground() {
+            MovieDbHelper mMovieDbHelper = new MovieDbHelper(getContext());
             SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
             String[] projection = {
                     MovieContract.MovieEntry._ID,
@@ -265,14 +280,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
             }
 
             return cursor;
+        }
     }
-}
 
     /*This method uses the cursor retrieved from the custom MovieLoad class and
     uses it to create a List of MovieResults and attache it to the adapter
      */
     public void setMovie() {
-        MovieLoader movieLoader= new MovieLoader(this);
+        MovieLoader movieLoader = new MovieLoader(this);
         Cursor cursor = movieLoader.loadInBackground();
 
         List<MovieResult> movieResult = new ArrayList<>();
@@ -291,7 +306,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         mAdapter.addMovieResult(movieResult);
         cursor.close();
     }
-    private void loadMore(){
+
+    private void loadMore() {
         itShouldLoadMore = false;
         Call<Movie> movieCall = mManager.getMovieClient().getUpcomingMovies(Constants.API_KEY);
         movieCall.enqueue(new Callback<Movie>() {
@@ -315,19 +331,20 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-         outState.putParcelable(RECYCLERVIEW_STATE,mRecyclerView.getLayoutManager().onSaveInstanceState());
+         parcelable= manager.onSaveInstanceState();
+
+        outState.putParcelable(RECYCLERVIEW_STATE, parcelable);
+
     }
 
 
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//
-//        if (savedInstanceState == null){
-//            Parcelable parcelable = savedInstanceState.getParcelable(RECYCLERVIEW_STATE);
-//            mRecyclerView.setAdapter(mAdapter);
-//            mRecyclerView.getLayoutManager().onRestoreInstanceState(parcelable);
-//        }
-//    }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null){
+            parcelable = savedInstanceState.getParcelable(RECYCLERVIEW_STATE);
+        }
+
+    }
 
 }
