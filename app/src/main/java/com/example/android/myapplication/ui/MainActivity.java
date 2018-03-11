@@ -83,29 +83,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
          manager= new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(manager);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (dy > 0) {
-                    // Recycle view scrolling downwards...
-                    // this if statement detects when user reaches the end of recyclerView, this is only time we should load more
-                    if (!recyclerView.canScrollVertically(RecyclerView.FOCUS_DOWN)) {
-                        // remember "!" is the same as "== false"
-                        // here we are now allowed to load more, but we need to be careful
-                        // we must check if itShouldLoadMore variable is true [unlocked]
-                        if (itShouldLoadMore) {
-                            loadMore();
-                        }
-                    }
-                }
-
-            }
-        });
         mRecyclerView.setHasFixedSize(true);
         ifConnected();
         mRecyclerView.setAdapter(mAdapter);
+
     }
 
     @Override
@@ -331,9 +312,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-         parcelable= manager.onSaveInstanceState();
-
-        outState.putParcelable(RECYCLERVIEW_STATE, parcelable);
+        List<MovieResult> movie = mAdapter.getMovies();
+        if (movie!=null && !movie.isEmpty()){
+            outState.putParcelableArrayList(RECYCLERVIEW_STATE, (ArrayList<? extends Parcelable>) movie);
+        }
 
     }
 
@@ -341,8 +323,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null){
-            parcelable = savedInstanceState.getParcelable(RECYCLERVIEW_STATE);
+        if (savedInstanceState!=null){
+            if (savedInstanceState.containsKey(RECYCLERVIEW_STATE)){
+                List<MovieResult> movieResultList = savedInstanceState.getParcelableArrayList(RECYCLERVIEW_STATE);
+                mAdapter.addMovieResult(movieResultList);
+                mProgressBar.setVisibility(View.GONE);
+                mStatus.setVisibility(View.GONE);
+            }
         }
 
     }

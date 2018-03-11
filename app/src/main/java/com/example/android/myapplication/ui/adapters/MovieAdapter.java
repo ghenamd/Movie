@@ -77,33 +77,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsVi
             mClicked.onClickedMovie(movieResult);
         }
     }
+    public List<MovieResult> getMovies(){
+        return mResultList;
 
-    /*
-    /*----------------------------------------Helper Methods for endless scrolling
-     */
-    public void add(MovieResult m) {
-        mResultList.add(m);
-        notifyItemInserted(mResultList.size() - 1);
     }
 
-    public void addLoadingFooter() {
-        isLoadingAdded = true;
-        add(new MovieResult());
-    }
-
-    public void removeLoadingFooter() {
-        isLoadingAdded = false;
-
-        int position = mResultList.size() - 1;
-        MovieResult result = getItem(position);
-
-        if (result != null) {
-            mResultList.remove(position);
-            notifyItemRemoved(position);
-        }
-    }
-
-    public MovieResult getItem(int position) {
-        return mResultList.get(position);
-    }
 }

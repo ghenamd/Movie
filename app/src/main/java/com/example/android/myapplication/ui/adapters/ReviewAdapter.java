@@ -55,4 +55,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
             author = itemView.findViewById(R.id.author);
         }
     }
+    public List<MovieReviewResult> getReviewResults(){
+        return mReviewResults;
+    }
 }

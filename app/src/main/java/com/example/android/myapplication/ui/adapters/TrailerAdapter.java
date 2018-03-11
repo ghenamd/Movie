@@ -81,4 +81,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
 
         }
     }
+    public List<MovieVideoResult> getVideoResults(){
+        return mVideoResults;
+    }
 }

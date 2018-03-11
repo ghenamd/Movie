@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -68,7 +67,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     private MovieResult movieResult;
     private MovieDbHelper mMovieDbHelper;
     private ReviewAdapter mReviewAdapter;
-    private static final String RECYCLERVIEW_STATE = "state";
+    private static final String RECYCLERVIEW_STATE_TRAILERS = "trailers";
+    private static final String RECYCLERVIEW_STATE_REVIEWS = "reviews";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +85,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
         setFavouriteButton();
         populateUi();
 
-        mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>(),this);
+        mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>(), this);
         setMovieVideoResultClient();
         RecyclerView.LayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(manager);
@@ -233,29 +233,11 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(Constants.YOUTUBE_URL + videoResult.getKey()));
         PackageManager packageManager = getPackageManager();
-        if (intent.resolveActivity(packageManager) !=null){
+        if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
-        }
-        else {
-            Toast.makeText(this, R.string.toast_message,Toast.LENGTH_SHORT).show();
-        }
-
-    }
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(RECYCLERVIEW_STATE,mRecyclerView.getLayoutManager().onSaveInstanceState());
-        mRecyclerView.setAdapter(mAdapter);
-    }
-
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        if (savedInstanceState == null){
-            Parcelable parcelable = savedInstanceState.getParcelable(RECYCLERVIEW_STATE);
-            mRecyclerView.getLayoutManager().onRestoreInstanceState(parcelable);
+        } else {
+            Toast.makeText(this, R.string.toast_message, Toast.LENGTH_SHORT).show();
         }
     }
+
 }

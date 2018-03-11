@@ -1,5 +1,8 @@
 package com.example.android.myapplication.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -7,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Ghena on 24/02/2018.
  */
 
-public class MovieVideoResult {
+public class MovieVideoResult implements Parcelable {
     @SerializedName("id")
     @Expose
     private String id;
@@ -96,4 +99,47 @@ public class MovieVideoResult {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.iso6391);
+        dest.writeString(this.iso31661);
+        dest.writeString(this.key);
+        dest.writeString(this.name);
+        dest.writeString(this.site);
+        dest.writeValue(this.size);
+        dest.writeString(this.type);
+    }
+
+    public MovieVideoResult() {
+    }
+
+    protected MovieVideoResult(Parcel in) {
+        this.id = in.readString();
+        this.iso6391 = in.readString();
+        this.iso31661 = in.readString();
+        this.key = in.readString();
+        this.name = in.readString();
+        this.site = in.readString();
+        this.size = (Integer) in.readValue(Integer.class.getClassLoader());
+        this.type = in.readString();
+    }
+
+    public static final Parcelable.Creator<MovieVideoResult> CREATOR = new Parcelable.Creator<MovieVideoResult>() {
+        @Override
+        public MovieVideoResult createFromParcel(Parcel source) {
+            return new MovieVideoResult(source);
+        }
+
+        @Override
+        public MovieVideoResult[] newArray(int size) {
+            return new MovieVideoResult[size];
+        }
+    };
 }
