@@ -57,31 +57,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     GridLayoutManager manager;
     private List<MovieResult> movieResults;
     private static final String TAG = "MainActivity";
-    // we will be loading 15 items per page or per load
-    // you can change this to fit your specifications.
-    // When you change this, there will be no need to update your php page,
-    // as php will be ordered what to load and limit by android java
-    private static final int LOAD_LIMIT = 20;
-
-    // last id to be loaded from php page,
-    // we will need to keep track or database id field to know which id was loaded last
-    // and where to begin loading
-    private int lastId = 0; // this will issued to php page, so no harm make it string
-
-    // we need this variable to lock and unlock loading more
-    // e.g we should not load more when volley is already loading,
-    // loading will be activated when volley completes loading
-    private boolean itShouldLoadMore = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ButterKnife.bind(this);
         mManager = new RestManager();
         mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
-         manager= new GridLayoutManager(this, 2);
+        manager = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(manager);
         mRecyclerView.setHasFixedSize(true);
         ifConnected();
@@ -103,22 +87,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         if (id == R.id.action_popularity) {
             setTitle(getString(R.string.popular));
             if (isConnected()) {
-
-                Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
-                movieCall.enqueue(new Callback<Movie>() {
-                    @Override
-                    public void onResponse(Call<Movie> call, Response<Movie> response) {
-                        movieResults = response.body().getResults();
-                        mAdapter.addMovieResult(movieResults);
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        mStatus.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onFailure(Call<Movie> call, Throwable t) {
-                    }
-                });
-                return true;
+                getPopularMovies();
             } else {
                 mStatus.setVisibility(View.VISIBLE);
                 mStatus.setText(R.string.mobile_network_not_available);
@@ -153,18 +122,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         return super.onOptionsItemSelected(item);
     }
 
-    private void setManager() {
-        itShouldLoadMore = false;
-        Call<Movie> movieCall = mManager.getMovieClient().getUpcomingMovies(Constants.API_KEY);
+    private void getPopularMovies() {
+        Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
         movieCall.enqueue(new Callback<Movie>() {
             @Override
             public void onResponse(Call<Movie> call, Response<Movie> response) {
-                itShouldLoadMore = true;
                 movieResults = response.body().getResults();
                 mAdapter.addMovieResult(movieResults);
                 mProgressBar.setVisibility(View.INVISIBLE);
                 mStatus.setVisibility(View.INVISIBLE);
-
             }
 
             @Override
@@ -185,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     //If the user is connected to the Internet we set the RestManger
     private void ifConnected() {
         if (isConnected()) {
-            setManager();
+            getPopularMovies();
         } else {
             mStatus.setVisibility(View.VISIBLE);
             mStatus.setText(R.string.mobile_network_not_available);
@@ -203,10 +169,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     protected void onResume() {
         super.onResume();
-        if (parcelable!=null){
+        if (parcelable != null) {
             manager.onRestoreInstanceState(parcelable);
         }
-
         //If the title of the ActionBar is Favourite
         //then we setMovie method so we get and updated list of
         //the favourite movies
@@ -220,10 +185,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
-            GridLayoutManager gridLayoutManager = new GridLayoutManager(this,3);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
             mRecyclerView.setLayoutManager(gridLayoutManager);
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             mRecyclerView.setLayoutManager(manager);
         }
     }
@@ -288,50 +253,26 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         cursor.close();
     }
 
-    private void loadMore() {
-        itShouldLoadMore = false;
-        Call<Movie> movieCall = mManager.getMovieClient().getUpcomingMovies(Constants.API_KEY);
-        movieCall.enqueue(new Callback<Movie>() {
-            @Override
-            public void onResponse(Call<Movie> call, Response<Movie> response) {
-                itShouldLoadMore = true;
-                movieResults = response.body().getResults();
-                mAdapter.addMovieResult(movieResults);
-                mProgressBar.setVisibility(View.INVISIBLE);
-                mStatus.setVisibility(View.INVISIBLE);
-                lastId = movieResults.size();
-            }
-
-            @Override
-            public void onFailure(Call<Movie> call, Throwable t) {
-
-            }
-        });
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         List<MovieResult> movie = mAdapter.getMovies();
-        if (movie!=null && !movie.isEmpty()){
+        if (movie != null && !movie.isEmpty()) {
             outState.putParcelableArrayList(RECYCLERVIEW_STATE, (ArrayList<? extends Parcelable>) movie);
         }
-
     }
-
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState!=null){
-            if (savedInstanceState.containsKey(RECYCLERVIEW_STATE)){
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(RECYCLERVIEW_STATE)) {
                 List<MovieResult> movieResultList = savedInstanceState.getParcelableArrayList(RECYCLERVIEW_STATE);
                 mAdapter.addMovieResult(movieResultList);
                 mProgressBar.setVisibility(View.GONE);
                 mStatus.setVisibility(View.GONE);
             }
         }
-
     }
-
 }
