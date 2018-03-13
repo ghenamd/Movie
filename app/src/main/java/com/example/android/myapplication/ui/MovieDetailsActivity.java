@@ -67,9 +67,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     private MovieResult movieResult;
     private MovieDbHelper mMovieDbHelper;
     private ReviewAdapter mReviewAdapter;
-    private static final String RECYCLERVIEW_STATE_TRAILERS = "trailers";
-    private static final String RECYCLERVIEW_STATE_REVIEWS = "reviews";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

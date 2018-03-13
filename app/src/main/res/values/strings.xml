@@ -7,11 +7,11 @@
     <string name="mobile_network_not_available">Mobile Network Not Available</string>
     <string name="no_favourite_movie">No Favourites Movies</string>
     <string name="popular">Popular</string>
-    <string name="top_rated">Top Rated</string>
     <string name="favourite">Favourite</string>
     <string name="movie_review">Movie Review</string>
     <string name="review_review_review">Review review review</string>
     <string name="author">Author</string>
     <string name="toast_message">No apps available to play video</string>
     <string name="release_date">Release Date</string>
+    <string name="top_rated">Top Rated</string>
 </resources>
