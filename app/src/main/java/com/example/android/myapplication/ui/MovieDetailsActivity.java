@@ -1,12 +1,14 @@
 package com.example.android.myapplication.ui;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,12 +16,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.CompoundButton;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.example.android.myapplication.R;
 import com.example.android.myapplication.data.InsertMovieDetails;
@@ -54,7 +55,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     @BindView(R.id.releaseDate)
     TextView date;
     @BindView(R.id.image_button)
-    ToggleButton mButton;
+    FloatingActionButton mButton;
     private RatingBar mRatingBar;
     private static final String TAG = "MovieDetailsActivity";
     @BindView(R.id.recycler_trailers)
@@ -67,6 +68,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     private MovieResult movieResult;
     private MovieDbHelper mMovieDbHelper;
     private ReviewAdapter mReviewAdapter;
+    private final static String TRAILER_STATE = "trailer_state";
+    private final static String REVIEW_STATE = "review_state";
+    RecyclerView.LayoutManager reviewManager, trailerManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,16 +89,15 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
 
         mAdapter = new TrailerAdapter(new ArrayList<MovieVideoResult>(), this);
         setMovieVideoResultClient();
-        RecyclerView.LayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        mRecyclerView.setLayoutManager(manager);
+        trailerManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(trailerManager);
         mRecyclerView.setAdapter(mAdapter);
 
         mReviewAdapter = new ReviewAdapter(new ArrayList<MovieReviewResult>());
         setMovieReview();
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mRecyclerViewReviews.setLayoutManager(layoutManager);
+        reviewManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerViewReviews.setLayoutManager(reviewManager);
         mRecyclerViewReviews.setAdapter(mReviewAdapter);
-
     }
 
     @Override
@@ -158,7 +162,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     }
 
     private void populateUi() {
-
         title.setText(movieResult.getOriginalTitle());
         Picasso.with(this).load(Constants.IMAGE_BASE_URL + movieResult.getPosterPath())
                 .fit().into(imageThumbnail);
@@ -170,16 +173,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     // Set the ClickListener on the ToggleButton
     // responsible for adding or deleting a movie from the Favourites list
     private void setFavouriteButton() {
-        mButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+            public void onClick(View view) {
                 int idOfTheMovie = movieResult.getId();
 
                 if (isFavouriteMovie(idOfTheMovie)) {
-                    mButton.setBackgroundResource(R.drawable.star_white);
+                    mButton.setImageResource(R.drawable.star_white);
                     deleteFromFavourite(idOfTheMovie);
                 } else if (!isFavouriteMovie(movieResult.getId())) {
-                    mButton.setBackgroundResource(R.drawable.star_yellow);
+                    mButton.setImageResource(R.drawable.star_yellow);
                     addToFavourite();
                 }
             }
@@ -189,15 +192,13 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     //Add Movies to the local database
     private void addToFavourite() {
         ContentValues values = InsertMovieDetails.insertMovieValues(movieResult);
-        SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
-        db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
+        getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, values);
 
     }
 
     //Delete Movie  from the local database
     private void deleteFromFavourite(int id) {
-        SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
-        db.delete(MovieContract.MovieEntry.TABLE_NAME,
+        getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI,
                 MovieContract.MovieEntry.COLUMN_ID + "=" + id,
                 null);
     }
@@ -205,19 +206,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     //Method to check if the Movie to be added to Favourites is in Favourite database
     public boolean isFavouriteMovie(int id) {
 
-        SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
+        ContentResolver resolver = getContentResolver();
         String[] projection = {MovieContract.MovieEntry.COLUMN_ID};
         String[] selectionArgs = {String.valueOf(id)};
-        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+        Cursor cursor = resolver.query(MovieContract.MovieEntry.CONTENT_URI,
                 projection,
                 MovieContract.MovieEntry.COLUMN_ID + "=?",
                 selectionArgs,
                 null,
-                null,
                 null);
         if (cursor.moveToNext() && cursor.getCount() > 0) {
             cursor.close();
-            mButton.setBackgroundResource(R.drawable.star_yellow);
+            mButton.setImageResource(R.drawable.star_yellow);
             return true;
         } else {
             cursor.close();
@@ -234,6 +234,34 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
             startActivity(intent);
         } else {
             Toast.makeText(this, R.string.toast_message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        List<MovieVideoResult> movie = mAdapter.getVideoResults();
+        List<MovieReviewResult> reviewResults = mReviewAdapter.getReviewResults();
+        if (movie != null && !movie.isEmpty()) {
+            outState.putParcelableArrayList(TRAILER_STATE, (ArrayList<? extends Parcelable>) movie);
+        }
+        if (reviewResults != null && !reviewResults.isEmpty()) {
+            outState.putParcelableArrayList(REVIEW_STATE, (ArrayList<? extends Parcelable>) reviewResults);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(TRAILER_STATE)) {
+                List<MovieVideoResult> movieResultList = savedInstanceState.getParcelableArrayList(TRAILER_STATE);
+                mAdapter.addTrailers(movieResultList);
+
+            } else if (savedInstanceState.containsKey(REVIEW_STATE)) {
+                List<MovieReviewResult> review = savedInstanceState.getParcelableArrayList(REVIEW_STATE);
+                mReviewAdapter.addMovieReviews(review);
+            }
         }
     }
 

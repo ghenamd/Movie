@@ -32,7 +32,6 @@
         <activity
             android:name=".ui.MovieDetailsActivity"
             android:parentActivityName=".ui.MainPopularActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.TopRatedActivity"
             android:configChanges="screenSize"/>

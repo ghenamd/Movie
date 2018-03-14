@@ -63,7 +63,6 @@ public class MainPopularActivity extends AppCompatActivity implements MovieAdapt
         mRecyclerView.setHasFixedSize(true);
         ifConnected();
         mRecyclerView.setAdapter(mAdapter);
-
     }
 
     @Override
