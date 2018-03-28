@@ -59,7 +59,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
         notifyDataSetChanged();
     }
     public interface OnTrailerClick{
-        void onClick(MovieVideoResult videoResult);
+        void onClicked(MovieVideoResult videoResult);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -77,7 +77,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
         public void onClick(View view) {
             int position = getAdapterPosition();
             MovieVideoResult movieVideoResult = mVideoResults.get(position);
-            mOnTrailerClick.onClick(movieVideoResult);
+            mOnTrailerClick.onClicked(movieVideoResult);
 
         }
     }

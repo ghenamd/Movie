@@ -226,7 +226,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerAd
     }
 
     @Override
-    public void onClick(MovieVideoResult videoResult) {
+    public void onClicked(MovieVideoResult videoResult) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(Constants.YOUTUBE_URL + videoResult.getKey()));
         PackageManager packageManager = getPackageManager();
