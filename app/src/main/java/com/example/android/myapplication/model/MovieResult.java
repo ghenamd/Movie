@@ -40,7 +40,7 @@ public class MovieResult implements Parcelable {
     private String originalLanguage;
     @SerializedName("title")
     @Expose
-    private String title;
+    public String title;
     @SerializedName("backdrop_path")
     @Expose
     private String backdropPath;

@@ -3,6 +3,7 @@ package com.example.android.myapplication.utils;
 import android.content.Context;
 import android.widget.ImageView;
 
+import com.example.android.myapplication.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -22,6 +23,7 @@ public class LoadCachedImages {
                         Picasso
                                 .with(context)
                                 .load(imagePath)
+                                .placeholder(R.drawable.no_image_icon)
                                 .into(image);
                     }
 

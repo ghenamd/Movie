@@ -2,6 +2,8 @@ package com.example.android.myapplication.network;
 
 import com.example.android.myapplication.utils.Constants;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -11,18 +13,22 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestManager {
 
-    private MovieClient mClient;
 
-    public MovieClient getMovieClient(){
-        if(mClient == null){
 
-            Retrofit retrofit= new Retrofit.Builder()
+    public static MovieClient getMovieClient(){
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+        httpClient.addInterceptor(logging);
+
+        Retrofit retrofit= new Retrofit.Builder()
                     .baseUrl(Constants.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(httpClient.build())
                     .build();
-            mClient = retrofit.create(MovieClient.class);
-        }
-        return mClient;
+            return retrofit.create(MovieClient.class);
 
     }
+
 }

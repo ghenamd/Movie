@@ -1,11 +1,13 @@
 package com.example.android.myapplication.ui;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,38 +19,28 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.myapplication.R;
-import com.example.android.myapplication.model.Movie;
 import com.example.android.myapplication.model.MovieResult;
-import com.example.android.myapplication.network.RestManager;
-import com.example.android.myapplication.ui.adapters.MovieAdapter;
+import com.example.android.myapplication.ui.adapters.CustomMovieAdapter;
 import com.example.android.myapplication.utils.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.android.myapplication.viewmodel.MovieViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Created by Ghena on 24/02/2018.
  */
 
-public class MainPopularActivity extends AppCompatActivity implements MovieAdapter.OnItemClicked {
+public class MainPopularActivity extends AppCompatActivity implements CustomMovieAdapter.OnItemClicked {
     @BindView(R.id.recycler)
     RecyclerView mRecyclerView;
-    private MovieAdapter mAdapter;
-    private RestManager mManager;
-    private static final String RECYCLERVIEW_STATE = "state";
+    public static boolean popular = true;
+    private CustomMovieAdapter mMovieAdapter;
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
     @BindView(R.id.network_error)
     TextView mStatus;
     GridLayoutManager manager;
-    private List<MovieResult> movieResults;
-    private static final String TAG = "MainPopularActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,13 +48,10 @@ public class MainPopularActivity extends AppCompatActivity implements MovieAdapt
         setContentView(R.layout.activity_main);
         setTitle(getString(R.string.popular));
         ButterKnife.bind(this);
-        mManager = new RestManager();
-        mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
+        mMovieAdapter = new CustomMovieAdapter(this,this);
         manager = new GridLayoutManager(this, 2);
-        mRecyclerView.setLayoutManager(manager);
-        mRecyclerView.setHasFixedSize(true);
         ifConnected();
-        mRecyclerView.setAdapter(mAdapter);
+
     }
 
     @Override
@@ -88,24 +77,6 @@ public class MainPopularActivity extends AppCompatActivity implements MovieAdapt
         return super.onOptionsItemSelected(item);
     }
 
-    private void getPopularMovies() {
-        Call<Movie> movieCall = mManager.getMovieClient().getPopularMovies(Constants.API_KEY);
-        movieCall.enqueue(new Callback<Movie>() {
-            @Override
-            public void onResponse(Call<Movie> call, Response<Movie> response) {
-                movieResults = response.body().getResults();
-                mAdapter.addMovieResult(movieResults);
-                mProgressBar.setVisibility(View.INVISIBLE);
-                mStatus.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onFailure(Call<Movie> call, Throwable t) {
-
-            }
-        });
-    }
-
     //This method checks if there is Network if there is we fetch the data from internet
     // otherwise we inform the user of an Unavailable Network
     private boolean isConnected() {
@@ -117,12 +88,25 @@ public class MainPopularActivity extends AppCompatActivity implements MovieAdapt
     //If the user is connected to the Internet we set the RestManger
     private void ifConnected() {
         if (isConnected()) {
-            getPopularMovies();
+            setupViewModel();
         } else {
             mStatus.setVisibility(View.VISIBLE);
             mStatus.setText(R.string.mobile_network_not_available);
             mProgressBar.setVisibility(View.INVISIBLE);
         }
+    }
+    private void setupViewModel(){
+        MovieViewModel movieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
+       movieViewModel.getMovieResultLiveData().observe(this, new Observer<PagedList<MovieResult>>() {
+           @Override
+           public void onChanged(@Nullable PagedList<MovieResult> movieResults) {
+               mRecyclerView.setLayoutManager(manager);
+               mRecyclerView.setHasFixedSize(true);
+               mMovieAdapter.submitList(movieResults);
+               mRecyclerView.setAdapter(mMovieAdapter);
+               mProgressBar.setVisibility(View.INVISIBLE);
+           }
+       });
     }
 
     @Override
@@ -132,25 +116,4 @@ public class MainPopularActivity extends AppCompatActivity implements MovieAdapt
         startActivity(intent);
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        List<MovieResult> movie = mAdapter.getMovies();
-        if (movie != null && !movie.isEmpty()) {
-            outState.putParcelableArrayList(RECYCLERVIEW_STATE, (ArrayList<? extends Parcelable>) movie);
-        }
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(RECYCLERVIEW_STATE)) {
-                List<MovieResult> movieResultList = savedInstanceState.getParcelableArrayList(RECYCLERVIEW_STATE);
-                mAdapter.addMovieResult(movieResultList);
-                mProgressBar.setVisibility(View.GONE);
-                mStatus.setVisibility(View.GONE);
-            }
-        }
-    }
 }
