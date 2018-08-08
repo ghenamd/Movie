@@ -7,22 +7,19 @@ import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import android.support.annotation.NonNull;
 
-import com.example.android.myapplication.datasource.popularmovie.MovieDataSourceFactory;
+import com.example.android.myapplication.datasource.topmovie.MovieTopDataSourceFactory;
 import com.example.android.myapplication.model.MovieResult;
-import com.example.android.myapplication.network.LoadState;
 import com.example.android.myapplication.utils.AppExecutor;
 
 
-public class MovieViewModel extends AndroidViewModel {
 
-    private  final int PAGE_SIZE = 2;
 
-    private LoadState networkState;
+public class MovieTopViewModel extends AndroidViewModel {
 
-    public MovieViewModel(@NonNull Application application) {
+    private final int PAGE_SIZE = 2;
+    public MovieTopViewModel(@NonNull Application application) {
         super(application);
     }
-
     public LiveData<PagedList<MovieResult>> getMovieResultLiveData() {
 
         PagedList.Config config = new PagedList.Config.Builder()
@@ -31,12 +28,10 @@ public class MovieViewModel extends AndroidViewModel {
                 .setPageSize(PAGE_SIZE)
                 .build();
 
-        MovieDataSourceFactory dataSourceFactory = new MovieDataSourceFactory();
-        LiveData<PagedList<MovieResult>> mPagedListLiveData = new LivePagedListBuilder<>(dataSourceFactory, config)
+        MovieTopDataSourceFactory dataSourceFactory = new MovieTopDataSourceFactory();
+
+        return new LivePagedListBuilder<>(dataSourceFactory, config)
                 .setFetchExecutor(AppExecutor.networkIO())
                 .build();
-
-        return mPagedListLiveData;
     }
-
 }

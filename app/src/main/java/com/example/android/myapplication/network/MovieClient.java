@@ -20,7 +20,7 @@ public interface MovieClient {
     Call<Movie> getPopularByPage(@Query("api_key") String api, @Query("page") int pageNumber);
 
     @GET("top_rated?")
-    Call<Movie> getTopRatedMovies(@Query("api_key")String s);
+    Call<Movie> getTopRatedMovies(@Query("api_key")String api, @Query("page") int pageNumber);
 
        @GET("{movie_id}/videos?")
     Call<MovieVideo> getMovieTrailer(@Path("movie_id") int in, @Query("api_key")String s);

@@ -1,4 +1,4 @@
-package com.example.android.myapplication.datasource;
+package com.example.android.myapplication.datasource.topmovie;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.PageKeyedDataSource;
@@ -14,13 +14,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MovieDataSource extends PageKeyedDataSource<Integer, MovieResult> {
-
+public class MovieTopDataSource extends PageKeyedDataSource<Integer, MovieResult> {
     private MovieClient mMovieClient;
 
     public final MutableLiveData loadState;
 
-    public MovieDataSource(MovieClient movieClient) {
+    public MovieTopDataSource(MovieClient movieClient) {
         mMovieClient = movieClient;
         loadState = new MutableLiveData<LoadState>();
     }
@@ -31,8 +30,8 @@ public class MovieDataSource extends PageKeyedDataSource<Integer, MovieResult> {
     }
 
     @Override
-    public void loadInitial(@NonNull LoadInitialParams<Integer> params, @NonNull final LoadInitialCallback<Integer, MovieResult> callback) {
-        Call<Movie> movieCall = mMovieClient.getPopularByPage(Constants.API_KEY, 1);
+    public void loadInitial(@NonNull PageKeyedDataSource.LoadInitialParams<Integer> params, @NonNull final PageKeyedDataSource.LoadInitialCallback<Integer, MovieResult> callback) {
+        Call<Movie> movieCall = mMovieClient.getTopRatedMovies(Constants.API_KEY, 1);
         movieCall.enqueue(new Callback<Movie>() {
             @Override
             public void onResponse(Call<Movie> call, Response<Movie> response) {
@@ -54,14 +53,14 @@ public class MovieDataSource extends PageKeyedDataSource<Integer, MovieResult> {
     }
 
     @Override
-    public void loadBefore(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, MovieResult> callback) {
+    public void loadBefore(@NonNull PageKeyedDataSource.LoadParams<Integer> params, @NonNull PageKeyedDataSource.LoadCallback<Integer, MovieResult> callback) {
 
     }
 
     @Override
-    public void loadAfter(@NonNull final LoadParams<Integer> params, @NonNull final LoadCallback<Integer, MovieResult> callback) {
+    public void loadAfter(@NonNull final PageKeyedDataSource.LoadParams<Integer> params, @NonNull final PageKeyedDataSource.LoadCallback<Integer, MovieResult> callback) {
 
-        Call<Movie> movieCall = mMovieClient.getPopularByPage(Constants.API_KEY, params.key);
+        Call<Movie> movieCall = mMovieClient.getTopRatedMovies(Constants.API_KEY, params.key);
         movieCall.enqueue(new Callback<Movie>() {
             @Override
             public void onResponse(Call<Movie> call, Response<Movie> response) {

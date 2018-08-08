@@ -1,11 +1,13 @@
 package com.example.android.myapplication.ui;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,50 +19,39 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.myapplication.R;
-import com.example.android.myapplication.model.Movie;
 import com.example.android.myapplication.model.MovieResult;
-import com.example.android.myapplication.network.RestManager;
-import com.example.android.myapplication.ui.adapters.MovieAdapter;
+import com.example.android.myapplication.ui.adapters.CustomMovieAdapter;
 import com.example.android.myapplication.utils.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.android.myapplication.viewmodel.MovieTopViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Created by Ghena on 13/03/2018.
  */
 
-public class TopRatedActivity extends AppCompatActivity implements MovieAdapter.OnItemClicked {
+public class TopRatedActivity extends AppCompatActivity implements CustomMovieAdapter.OnItemClicked {
+
     @BindView(R.id.recycler)
     RecyclerView mRecyclerView;
-    private MovieAdapter mAdapter;
-    private RestManager mManager;
-    private static final String RECYCLERVIEW_STATE = "state";
+    private CustomMovieAdapter mAdapter;
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
     @BindView(R.id.network_error)
     TextView mStatus;
     GridLayoutManager manager;
-    private List<MovieResult> movieResults;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(getString(R.string.top_rated));
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        mManager = new RestManager();
-        mAdapter = new MovieAdapter(new ArrayList<MovieResult>(), this);
         manager = new GridLayoutManager(this, 2);
-        mRecyclerView.setLayoutManager(manager);
-        mRecyclerView.setHasFixedSize(true);
+        mAdapter = new CustomMovieAdapter(this,this);
         ifConnected();
-        mRecyclerView.setAdapter(mAdapter);
     }
 
 
@@ -76,11 +67,11 @@ public class TopRatedActivity extends AppCompatActivity implements MovieAdapter.
         int id = item.getItemId();
         //Fetch and Sort Movies by Popularity
         if (id == R.id.action_popularity) {
-            Intent intent = new Intent(TopRatedActivity.this,MainPopularActivity.class);
+            Intent intent = new Intent(TopRatedActivity.this, MainPopularActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.action_favourite) {
-            Intent intent = new Intent(TopRatedActivity.this,FavouriteActivity.class);
+            Intent intent = new Intent(TopRatedActivity.this, FavouriteActivity.class);
             startActivity(intent);
             return true;
         }
@@ -95,27 +86,10 @@ public class TopRatedActivity extends AppCompatActivity implements MovieAdapter.
         NetworkInfo info = manager.getActiveNetworkInfo();
         return info != null && info.isConnectedOrConnecting();
     }
-    private void getTopRatedMovies(){
-        //Fetch and sort Movies by Rating
-        Call<Movie> movieCall = mManager.getMovieClient().getTopRatedMovies(Constants.API_KEY);
-        movieCall.enqueue(new Callback<Movie>() {
-            @Override
-            public void onResponse(Call<Movie> call, Response<Movie> response) {
-                movieResults = response.body().getResults();
-                mAdapter.addMovieResult(movieResults);
-                mProgressBar.setVisibility(View.INVISIBLE);
-                mStatus.setVisibility(View.INVISIBLE);
-            }
 
-            @Override
-            public void onFailure(Call<Movie> call, Throwable t) {
-
-            }
-        });
-    }
     private void ifConnected() {
         if (isConnected()) {
-            getTopRatedMovies();
+            setupViewModel();
         } else {
             mStatus.setVisibility(View.VISIBLE);
             mStatus.setText(R.string.mobile_network_not_available);
@@ -129,26 +103,19 @@ public class TopRatedActivity extends AppCompatActivity implements MovieAdapter.
         intent.putExtra(Constants.PARCEL, movie);
         startActivity(intent);
     }
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        List<MovieResult> movie = mAdapter.getMovies();
-        if (movie != null && !movie.isEmpty()) {
-            outState.putParcelableArrayList(RECYCLERVIEW_STATE, (ArrayList<? extends Parcelable>) movie);
-        }
-    }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(RECYCLERVIEW_STATE)) {
-                List<MovieResult> movieResultList = savedInstanceState.getParcelableArrayList(RECYCLERVIEW_STATE);
-                mAdapter.addMovieResult(movieResultList);
-                mProgressBar.setVisibility(View.GONE);
-                mStatus.setVisibility(View.GONE);
+    private void setupViewModel(){
+        MovieTopViewModel movieViewModel = ViewModelProviders.of(this).get(MovieTopViewModel.class);
+        movieViewModel.getMovieResultLiveData().observe(this, new Observer<PagedList<MovieResult>>() {
+            @Override
+            public void onChanged(@Nullable PagedList<MovieResult> movieResults) {
+                mRecyclerView.setLayoutManager(manager);
+                mRecyclerView.setHasFixedSize(true);
+                mAdapter.submitList(movieResults);
+                mRecyclerView.setAdapter(mAdapter);
+                mProgressBar.setVisibility(View.INVISIBLE);
             }
-        }
+        });
     }
 
 }

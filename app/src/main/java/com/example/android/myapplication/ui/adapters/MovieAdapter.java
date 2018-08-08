@@ -20,7 +20,6 @@ import java.util.List;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ThumbnailsViewHolder> {
     private List<MovieResult> mResultList;
     private OnItemClicked mClicked;
-    private boolean isLoadingAdded = false;
 
     public MovieAdapter(List<MovieResult> resultList, OnItemClicked movieClicked) {
         mResultList = resultList;
