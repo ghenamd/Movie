@@ -37,13 +37,13 @@ public class FavouriteActivity extends AppCompatActivity implements MovieAdapter
     @BindView(R.id.recycler)
     RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
-    private static final String RECYCLERVIEW_STATE = "state";
+
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
     @BindView(R.id.network_error)
     TextView mStatus;
     GridLayoutManager manager;
-    private List<MovieResult> movieResults;
+    
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
