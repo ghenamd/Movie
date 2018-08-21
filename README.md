@@ -19,6 +19,13 @@ release date
 * Allow users to mark a movie as a favorite in the details view by tapping a button(star).
 * You'll create a database to store the names and ids of the user's favorite movies (and optionally, the rest of the information needed to display their favorites collection while offline).
 * You’ll modify the existing sorting criteria for the main view to include an additional pivot to show their favorites collection.
+
+![movie](https://github.com/ghenamd/Movie/blob/master/app/screenshots/movie1.jpg?raw=true) . ![movie](https://github.com/ghenamd/Movie/blob/master/app/screenshots/movie2.jpg?raw=true)
+
+![movie](https://github.com/ghenamd/Movie/blob/master/app/screenshots/movie3.jpg?raw=true) . ![movie](https://github.com/ghenamd/Movie/blob/master/app/screenshots/movie4.jpg?raw=true)
+
+![movie](https://github.com/ghenamd/Movie/blob/master/app/screenshots/movie5.jpg?raw=true)
+
 #### Why this Project?
 Learn how to build clean and compelling user interfaces (UIs), fetch data from network services, and optimize the experience for various mobile devices. You will hone these fundamental skills in this project.
 
